@@ -1,0 +1,21 @@
+name: "CI"
+
+jobs:
+  uv-example:
+    name: python
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Pre-commit
+        run: uv run pre-commit run -a
+
+      - name: Test
+        run: uv run python -m unittest

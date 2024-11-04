@@ -1,4 +1,5 @@
-name: "CI"
+name: CI
+on: [push]
 
 jobs:
   uv-example:
@@ -14,8 +15,11 @@ jobs:
       - name: Set up Python
         run: uv python install
 
-      - name: Pre-commit
+      - name: Install the project
+        run: uv sync --all-extras --dev
+
+      - name: Run tools
         run: uv run pre-commit run -a
 
-      - name: Test
+      - name: Run tests
         run: uv run python -m unittest

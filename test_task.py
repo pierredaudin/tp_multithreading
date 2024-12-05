@@ -9,11 +9,11 @@ class TestTask(unittest.TestCase):
         t.work()
         numpy.testing.assert_allclose(t.a @ t.x, t.b)
 
-    def test_serail_deserial():
+    def test_serial_deserial(self):
         a = Task()
         txt = a.to_json()
         b = Task.from_json(txt)
-        numpy.testing.assert_equal(a, b)
+        self.assertEqual(a, b)
 
 
 if __name__ == "__main__":

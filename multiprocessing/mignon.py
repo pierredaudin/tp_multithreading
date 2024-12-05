@@ -1,11 +1,11 @@
-from queue_system import connect_to_queue_manager
+from manager import QueueClient
 
 
 def minion():
     # Connexion au gestionnaire de queue
-    manager = connect_to_queue_manager()
-    task_queue = manager.get_task_queue()
-    result_queue = manager.get_result_queue()
+    client = QueueClient()
+    task_queue = client.get_task_queue()
+    result_queue = client.get_result_queue()
 
     print("Minion: Prêt à faire les tâches")
     while True:

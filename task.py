@@ -24,9 +24,9 @@ class Task:
         task_dict = {
             "identifier": self.identifier,
             "size": self.size,
-            "a": np.tolist(self.a),  # converison de matrice à liste
-            "b": np.tolist(self.b),
-            "x": np.tolist(self.x),
+            "a": self.a.tolist(),  # converison de matrice à liste
+            "b": self.b.tolist(),
+            "x": self.x.tolist(),
             "time": self.time,
         }
         return json.dumps(task_dict)

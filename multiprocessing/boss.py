@@ -9,7 +9,7 @@ def boss():
     # Création et ajout des tâches
     print("Boss: Adding tasks to the queue...")
     for i in range(10):  # Génère 10 tâches
-        task = Task(i, 10)
+        task = Task(i, 1000)
         print(f"Boss: Adding Task {task.identifier} to the queue.")
         client.task_queue.put(task)
 
@@ -27,11 +27,15 @@ def boss():
         results.append(result)
         print(f"Boss: Received result for task {result.identifier}: {result.time} s")
         total_time += result.time
+        print(f"\nTotal Time: {total_time} s")
 
     print("\nBoss: All results received. Exiting.")
     print("Final Results:")
     for task in results:
         print(f"Task {task.identifier}: Result = {task.time} s")
+
+    # Afficher la somme des temps
+    print(f"\nTotal Time: {total_time} s")
 
     # Envoyer un signal de fin pour arrêter les Minions
     client.result_queue.put(None)

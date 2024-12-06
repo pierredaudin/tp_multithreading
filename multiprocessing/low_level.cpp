@@ -34,14 +34,14 @@ int main() {
     // Extraire les informations de la tâche
     int identifier = task_json["identifier"];
     int size = task_json["size"];
-    Eigen::MatrixXd A(size, size);
+    Eigen::MatrixXd a(size, size);
     Eigen::VectorXd b(size);
 
     // Charger la matrice A et le vecteur b depuis le JSON
     for (int i = 0; i < size; ++i) {
       b[i] = task_json["b"][i];
       for (int j = 0; j < size; ++j) {
-        A(i, j) = task_json["a"][i][j];
+        a(i, j) = task_json["a"][i][j];
       }
     }
 
@@ -50,7 +50,13 @@ int main() {
 
     // Résoltution du système linéaire
     auto start = std::chrono::high_resolution_clock::now();
-    Eigen::VectorXd x = A.colPivHouseholderQr().solve(b);
+    Eigen::VectorXd x = a.colPivHouseholderQr().solve(
+        b); //-> Le plus lent des solveurs de eigen
+
+    // Utilisation de la décomposition LLT
+    // Eigen::LLT<Eigen::MatrixXd> llt(a);
+    //: Eigen::VectorXd x = llt.solve(b);
+
     auto end = std::chrono::high_resolution_clock::now();
 
     double time_taken = std::chrono::duration<double>(end - start).count();
@@ -65,7 +71,7 @@ int main() {
     for (int i = 0; i < size; ++i) {
       result_json["b"][i] = b[i];
       for (int j = 0; j < size; ++j) {
-        result_json["a"][i][j] = A(i, j);
+        result_json["a"][i][j] = a(i, j);
       }
     }
 

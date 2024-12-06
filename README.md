@@ -17,12 +17,12 @@
 
 | Taille | Langage | Solveur                  |  Temps total pour 10 tâches (en s) |
 |-------------|----------|-------------------------|------------------|
-| \( 10 	imes 10 \) | C++      | ColPivHouseholderQR      | 1.32e-04       |
-| \( 10 	imes 10 \) | C++      | LLT                     | 5.293e-05       |
-| \( 10 	imes 10 \) | Python   | linalg.solve            | 4.794e-04       |
-| \( 1000 	imes 1000 \) | C++      | ColPivHouseholderQR      | 1.582          |
-| \( 1000 	imes 1000 \) | C++      | LLT                     | 3.557e-05          |
-| \( 1000 	imes 1000 \) | Python   | linalg.solve            | 3.629e-04          |
+| \( 10 	x 10 \) | C++      | ColPivHouseholderQR      | 1.32e-04       |
+| \( 10 	x 10 \) | C++      | LLT                     | 5.293e-05       |
+| \( 10 	x 10 \) | Python   | linalg.solve            | 4.794e-04       |
+| \( 1000 	x 1000 \) | C++      | ColPivHouseholderQR      | 1.582          |
+| \( 1000 	x 1000 \) | C++      | LLT                     | 3.557e-05          |
+| \( 1000 	x 1000 \) | Python   | linalg.solve            | 3.629e-04          |
 
 ---
 

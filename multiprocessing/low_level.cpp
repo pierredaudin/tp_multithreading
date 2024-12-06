@@ -1,4 +1,5 @@
 #include <Eigen/Dense>
+#include <chrono>
 #include <cpr/cpr.h>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -6,98 +7,82 @@
 // Namespace pour JSON
 using json = nlohmann::json;
 
-// Classe représentant une tâche
-class Task {
-public:
-  int identifier;
-  int size;
-  Eigen::MatrixXd a;
-  Eigen::VectorXd b;
-  Eigen::VectorXd x;
-  double time;
-
-  // Constructeur vide
-  Task() : identifier(0), size(0), time(0) {}
-
-  // Constructeur à partir d'un JSON
-  explicit Task(const json &task_json) {
-    identifier = task_json.at("identifier").get<int>();
-    size = task_json.at("size").get<int>();
-    a = Eigen::MatrixXd(size, size);
-    b = Eigen::VectorXd(size);
-
-    // Charger les données de la matrice et du vecteur
-    for (int i = 0; i < size; ++i) {
-      b[i] = task_json.at("b")[i];
-      for (int j = 0; j < size; ++j) {
-        a(i, j) = task_json.at("a")[i][j];
-      }
-    }
-
-    x = Eigen::VectorXd::Zero(size);
-    time = 0;
-  }
-
-  // Méthode pour effectuer le travail
-  json work() {
-    auto start = std::chrono::high_resolution_clock::now();
-    x = a.colPivHouseholderQr().solve(b); // Résolution de l'équation Ax = b
-    auto end = std::chrono::high_resolution_clock::now();
-
-    time = std::chrono::duration<double>(end - start).count();
-
-    // Préparer le résultat en format JSON
-    json result_json;
-    result_json["identifier"] = identifier;
-    result_json["time"] = time;
-    result_json["x"] = std::vector<double>(x.data(), x.data() + x.size());
-    return result_json;
-  }
-};
-
 int main() {
   std::cout << "Minion: Prêt à récupérer les tâches depuis le proxy"
             << std::endl;
 
   while (true) {
-    // Récupérer une tâche depuis le serveur proxy
-    auto response = cpr::Get(cpr::Url{"http://localhost:5000/get_task"});
+    // Récupérer une tâche depuis le proxy
+    auto response = cpr::Get(cpr::Url{"http://localhost:8000"});
 
     if (response.status_code != 200) {
       std::cerr << "Minion: Échec lors de la récupération de la tâche."
                 << std::endl;
-      return 1;
+      break;
     }
 
-    // Convertir la réponse JSON en objet Task
+    // Convertir la réponse en JSON
     json task_json = json::parse(response.text);
 
     // Vérifier si aucune tâche n'est disponible
     if (task_json.is_null() ||
-        task_json.contains("end") && task_json["end"] == true) {
+        (task_json.contains("end") && task_json["end"] == true)) {
       std::cout << "Minion: Plus de tâches disponibles. Arrêt." << std::endl;
       break;
     }
 
-    Task task(task_json);
-    std::cout << "Minion: Tâche " << task.identifier << " en cours"
-              << std::endl;
+    // Extraire les informations de la tâche
+    int identifier = task_json["identifier"];
+    int size = task_json["size"];
+    Eigen::MatrixXd A(size, size);
+    Eigen::VectorXd b(size);
 
-    // Exécuter le travail
-    json result = task.work();
+    // Charger la matrice A et le vecteur b depuis le JSON
+    for (int i = 0; i < size; ++i) {
+      b[i] = task_json["b"][i];
+      for (int j = 0; j < size; ++j) {
+        A(i, j) = task_json["a"][i][j];
+      }
+    }
+
+    std::cout << "Minion: Tâche " << identifier
+              << " reçue. Résolution en cours..." << std::endl;
+
+    // Résoltution du système linéaire
+    auto start = std::chrono::high_resolution_clock::now();
+    Eigen::VectorXd x = A.colPivHouseholderQr().solve(b);
+    auto end = std::chrono::high_resolution_clock::now();
+
+    double time_taken = std::chrono::duration<double>(end - start).count();
+
+    // Résultat en JSON
+    nlohmann::json result_json;
+    result_json["identifier"] = identifier;
+    result_json["size"] = size;
+    result_json["x"] = std::vector<double>(x.data(), x.data() + x.size());
+    result_json["time"] = time_taken;
+
+    for (int i = 0; i < size; ++i) {
+      result_json["b"][i] = b[i];
+      for (int j = 0; j < size; ++j) {
+        result_json["a"][i][j] = A(i, j);
+      }
+    }
+
+    // result_json["a"] = task_json["a"];
+    // result_json["b"] = task_json["b"];
 
     // Envoyer le résultat au proxy
-    auto post_response =
-        cpr::Post(cpr::Url{"http://localhost:8000/submit_result"},
-                  cpr::Body{result.dump()},
-                  cpr::Header{{"Content-Type", "application/json"}});
+    auto post_response = cpr::Post(
+        cpr::Url{"http://localhost:8000"}, cpr::Body{result_json.dump()},
+        cpr::Header{{"Content-Type", "application/json"}});
 
     if (post_response.status_code == 200) {
-      std::cout << "Minion: Résultat de la tâche " << task.identifier
+      std::cout << "Minion: Résultat de la tâche " << identifier
                 << " envoyé avec succès" << std::endl;
     } else {
       std::cerr << "Minion: Échec lors de l'envoi du résultat pour la tâche "
-                << task.identifier << std::endl;
+                << identifier << std::endl;
     }
   }
 

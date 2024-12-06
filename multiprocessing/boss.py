@@ -19,17 +19,19 @@ def boss():
 
     # Récupération des résultats depuis result_queue
     results = []
+    total_time = 0.0
     while True:
         result = client.result_queue.get()
         if result is None:
             break  # Signal de fin reçu
         results.append(result)
-        print(f"Boss: Received result for Task {result[0]}: {result[1]}")
+        print(f"Boss: Received result for task {result.identifier}: {result.time} s")
+        total_time += result.time
 
     print("\nBoss: All results received. Exiting.")
     print("Final Results:")
-    for task_id, result in results:
-        print(f"Task {task_id}: Result = {result}")
+    for task in results:
+        print(f"Task {task.identifier}: Result = {task.time} s")
 
     # Envoyer un signal de fin pour arrêter les Minions
     client.result_queue.put(None)

@@ -2,9 +2,8 @@ from multiprocessing.managers import BaseManager
 from multiprocessing import Queue
 
 
-# Définition du QueueManager
 class QueueClient:
-    # Fonction pour connecter un QueueClient
+    # Se connecter un QueueClient
     def __init__(self):
         QueueManager.register("get_task_queue")
         QueueManager.register("get_result_queue")
@@ -16,7 +15,6 @@ class QueueClient:
         self.result_queue = manager.get_result_queue()
 
 
-# Définition du QueueManager
 class QueueManager(BaseManager):
     pass
 

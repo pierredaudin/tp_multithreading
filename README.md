@@ -1,4 +1,4 @@
-## Pierre DAUDIN
+# Pierre DAUDIN 3A SRI
 # README: Résultats Benchmark solvers
 
 ## Solvers et Langages
